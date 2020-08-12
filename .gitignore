@@ -1,0 +1,11 @@
+.idea/
+consumer/gradle
+consumer/idea
+consumer/build
+consumer/gradlew
+consumer/gradlew.bat
+producer/gradle
+producer/idea
+producer/build
+producer/gradlew
+producer/gradlew.bat
