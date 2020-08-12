@@ -12,6 +12,9 @@ import org.springframework.retry.backoff.FixedBackOffPolicy;
 import org.springframework.retry.policy.SimpleRetryPolicy;
 import org.springframework.retry.support.RetryTemplate;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Configuration
 @EnableKafka
 @Slf4j
@@ -41,8 +44,9 @@ public class LibraryEventConsumerConfig {
     }
 
     private RetryPolicy simpleRetryPolicy() {
-        SimpleRetryPolicy simpleRetryPolicy = new SimpleRetryPolicy();
-        simpleRetryPolicy.setMaxAttempts(3);
+        Map<Class<? extends Throwable>, Boolean> exceptions = new HashMap<>();
+        exceptions.put(IllegalArgumentException.class, true);
+        SimpleRetryPolicy simpleRetryPolicy = new SimpleRetryPolicy(3, exceptions, true);
         return simpleRetryPolicy;
     }
 }
