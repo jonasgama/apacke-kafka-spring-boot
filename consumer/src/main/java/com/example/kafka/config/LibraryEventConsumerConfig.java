@@ -1,9 +1,13 @@
 package com.example.kafka.config;
 
+import com.example.kafka.service.LibraryRecoveryService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.kafka.ConcurrentKafkaListenerContainerFactoryConfigurer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.dao.RecoverableDataAccessException;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
@@ -20,6 +24,9 @@ import java.util.Map;
 @Slf4j
 public class LibraryEventConsumerConfig {
 
+    @Autowired
+    private LibraryRecoveryService libraryRecoveryService;
+
     @Bean
     public ConcurrentKafkaListenerContainerFactory kafkaListenerContainerFactory(
             ConcurrentKafkaListenerContainerFactoryConfigurer configurer,
@@ -30,6 +37,13 @@ public class LibraryEventConsumerConfig {
             log.error("Exception thrown {}, record is {}", thrownException.getMessage(), data);
         });
         factory.setRetryTemplate(retryTemplate());
+        factory.setRecoveryCallback(context -> {
+            if (context.getLastThrowable().getCause() instanceof RecoverableDataAccessException) {
+                ConsumerRecord<Integer, String> consumerRecord = (ConsumerRecord<Integer, String>) context.getAttribute("record");
+                libraryRecoveryService.handleRecovery(consumerRecord);
+            }
+            return null;
+        });
         return factory;
     }
 
@@ -46,6 +60,7 @@ public class LibraryEventConsumerConfig {
     private RetryPolicy simpleRetryPolicy() {
         Map<Class<? extends Throwable>, Boolean> exceptions = new HashMap<>();
         exceptions.put(IllegalArgumentException.class, true);
+        exceptions.put(RecoverableDataAccessException.class, false);
         SimpleRetryPolicy simpleRetryPolicy = new SimpleRetryPolicy(3, exceptions, true);
         return simpleRetryPolicy;
     }

@@ -7,6 +7,7 @@ import com.example.kafka.entity.LibraryEntity;
 import com.example.kafka.entity.LibraryEventType;
 import com.example.kafka.repository.LibraryEventRepository;
 import com.example.kafka.service.LibraryEventService;
+import com.example.kafka.service.LibraryRecoveryService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -59,6 +60,9 @@ public class LibraryEventConsumerTest {
 
     @Autowired
     private LibraryEventRepository repository;
+
+    @SpyBean
+    private LibraryRecoveryService libraryRecoveryService;
 
     @BeforeEach
     public void beforeEach(){
@@ -126,6 +130,20 @@ public class LibraryEventConsumerTest {
 
         verify(libraryEventConsumer, times(3)).onMessage(isA(ConsumerRecord.class));
         verify(libraryEventService, times(3)).processLibraryEvent(isA(ConsumerRecord.class));
+    }
+
+    @Test
+    public void shouldRecoverDataPublishingInTheTopic() throws JsonProcessingException, InterruptedException {
+        String json = "{\"libraryEventId\":null,\"type\":\"RECOVERY\",\"book\":{\"id\":null,\"name\":\"um livro\"}}";
+        LibraryEntity entity = new ObjectMapper().readValue(json, LibraryEntity.class);
+
+        kafkaTemplate.sendDefault(new ObjectMapper().writeValueAsString(entity));
+
+        new CountDownLatch(1).await(3, TimeUnit.SECONDS);
+
+        verify(libraryEventConsumer, times(2)).onMessage(isA(ConsumerRecord.class));
+        verify(libraryEventService, times(2)).processLibraryEvent(isA(ConsumerRecord.class));
+        verify(libraryRecoveryService, times(1)).handleRecovery(isA(ConsumerRecord.class));
     }
 
 
