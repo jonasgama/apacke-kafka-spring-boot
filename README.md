@@ -20,3 +20,7 @@ library-events Topic Message --> H2
 My retry policy tries 3 times in case of a IllegalArgumentException throws, the purpose of this aproach intented to see the mechanic working
 
 
+valid json to inser
+{"libraryEventId":null,"type":"NEW","book":{"id":null,"name":"uncle bob"}}
+
+
