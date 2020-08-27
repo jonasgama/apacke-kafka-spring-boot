@@ -34,12 +34,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class KafkaApplicationTests {
 
 	@Autowired
-	TestRestTemplate restTemplate;
+	private TestRestTemplate restTemplate;
 
 	@Autowired
-	EmbeddedKafkaBroker broker;
+	private EmbeddedKafkaBroker broker;
 
-	Consumer<Integer, String> consumer;
+	private Consumer<Integer, String> consumer;
 
 
 	@BeforeEach
@@ -72,12 +72,11 @@ public class KafkaApplicationTests {
 
 
 		ConsumerRecord<Integer, String> record = KafkaTestUtils.getSingleRecord(consumer, "library-events");
-		String expectedValue = "{\"libraryEventId\":1,\"type\":\"NEW\",\"book\":{\"id\":1,\"name\":\"meu-livro\"}}";
+		String expectedValue = "{\"libraryEventId\":null,\"type\":\"NEW\",\"book\":{\"id\":1,\"name\":\"meu-livro\"}}";
 
 		//then
-		assertEquals(HttpStatus.CREATED,responseEntity.getStatusCode());
+		assertEquals(HttpStatus.ACCEPTED,responseEntity.getStatusCode());
 		assertEquals(record.value(), expectedValue);
-		assertEquals(record.key(), 1);
 	}
 
 }

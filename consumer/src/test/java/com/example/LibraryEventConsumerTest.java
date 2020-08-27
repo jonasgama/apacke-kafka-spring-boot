@@ -2,9 +2,9 @@ package com.example;
 
 import com.example.kafka.KafkaApplication;
 import com.example.kafka.consumer.LibraryEventConsumer;
-import com.example.kafka.entity.BookEntity;
-import com.example.kafka.entity.LibraryEntity;
-import com.example.kafka.entity.LibraryEventType;
+import com.example.kafka.document.BookEntity;
+import com.example.kafka.document.LibraryEntity;
+import com.example.kafka.document.LibraryEventType;
 import com.example.kafka.repository.LibraryEventRepository;
 import com.example.kafka.service.LibraryEventService;
 import com.example.kafka.service.LibraryRecoveryService;

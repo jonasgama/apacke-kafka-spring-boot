@@ -14,8 +14,10 @@ spring:
     properties:
       retries: 10
       retry.backoff.ms: 1000
+      transaction.timeout.ms: 10000
+      acks: all
     admin:
       properties:
         bootstrap.servers: localhost:9092,localhost:9093
-        acks: all
+
 ---

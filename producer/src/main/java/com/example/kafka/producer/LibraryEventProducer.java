@@ -1,6 +1,8 @@
 package com.example.kafka.producer;
 
+import com.example.kafka.document.PendingEvents;
 import com.example.kafka.event.LibraryEvent;
+import com.example.kafka.repository.PendingEventRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
@@ -24,22 +26,19 @@ import java.util.concurrent.TimeoutException;
 @Slf4j
 public class LibraryEventProducer {
 
-
     @Autowired
     private KafkaTemplate<Integer, String> kafkaTemplate;
 
     @Autowired
     private ObjectMapper objMapper;
 
+    @Autowired
+    private PendingEventRepository pendings;
+
     public void sendLibraryEvent(LibraryEvent libraryEvent) throws JsonProcessingException {
-        Integer key = libraryEvent.getLibraryEventId();
-        String value = objMapper.writeValueAsString(libraryEvent);
+        String record = objMapper.writeValueAsString(libraryEvent);
 
-        //headers
-        List<Header> headers = Arrays.asList(new RecordHeader("event-source", "scanner".getBytes()));
-        ProducerRecord<Integer, String> record = new ProducerRecord<>("library-events", null, key, value, headers);
-
-        ListenableFuture<SendResult<Integer, String>> listenableFuture = kafkaTemplate.send(record);
+        ListenableFuture<SendResult<Integer, String>> listenableFuture = this.sentRecord(libraryEvent, record);
         listenableFuture.addCallback(new ListenableFutureCallback<SendResult<Integer, String>>() {
             @Override
             public void onFailure(Throwable ex) {
@@ -48,6 +47,7 @@ public class LibraryEventProducer {
                     throw ex;
                 } catch (Throwable throwable) {
                     log.error("Error in OnFailure: {}", throwable.getMessage());
+                    pendings.save(new PendingEvents(record));
                 }
             }
 
@@ -56,5 +56,30 @@ public class LibraryEventProducer {
                 log.info(result.toString());
             }
         });
+    }
+
+    public void sendLibraryPendingEvent(LibraryEvent libraryEvent) throws JsonProcessingException {
+        String record = objMapper.writeValueAsString(libraryEvent);
+        ListenableFuture<SendResult<Integer, String>> listenableFuture = this.sentRecord(libraryEvent, record);
+        listenableFuture.addCallback(new ListenableFutureCallback<SendResult<Integer, String>>() {
+            @Override
+            public void onFailure(Throwable ex) {
+                log.error("Pending event has failed after recovery: {}, cause: {}", record ,ex.getMessage());
+            }
+            @Override
+            public void onSuccess(SendResult<Integer, String> result) {
+                log.info("record has been recovered from pending database: {}", result.toString());
+                pendings.delete(new PendingEvents(record));
+            }
+        });
+    }
+
+    private ListenableFuture<SendResult<Integer, String>> sentRecord(LibraryEvent libraryEvent, String record) throws JsonProcessingException {
+        Integer key = libraryEvent.getLibraryEventId();
+        //headers
+        List<Header> headers = Arrays.asList(new RecordHeader("event-source", "scanner".getBytes()));
+        ProducerRecord<Integer, String> event = new ProducerRecord<>("library-events", null, key, record, headers);
+
+        return kafkaTemplate.send(event);
     }
 }

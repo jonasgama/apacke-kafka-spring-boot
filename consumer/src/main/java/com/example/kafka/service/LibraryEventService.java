@@ -1,6 +1,6 @@
 package com.example.kafka.service;
 
-import com.example.kafka.entity.LibraryEntity;
+import com.example.kafka.document.LibraryEntity;
 import com.example.kafka.repository.LibraryEventRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

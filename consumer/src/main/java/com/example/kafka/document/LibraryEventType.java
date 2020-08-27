@@ -1,4 +1,4 @@
-package com.example.kafka.entity;
+package com.example.kafka.document;
 
 public enum LibraryEventType {
     NEW,

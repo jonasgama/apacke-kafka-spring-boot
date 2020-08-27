@@ -1,6 +1,5 @@
-package com.example.kafka.entity;
+package com.example.kafka.document;
 
-import com.example.kafka.service.LibraryEventService;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.*;

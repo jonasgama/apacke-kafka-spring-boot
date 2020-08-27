@@ -6,6 +6,7 @@ services:
       - "2181:2181"
   kafka:
     image: wurstmeister/kafka
+    restart: always
     ports:
       - "9092:9092"
     environment:
@@ -17,6 +18,7 @@ services:
       KAFKA_CREATE_TOPICS: "library-events:4:2"
   kafka1:
     image: wurstmeister/kafka
+    restart: always
     ports:
       - "9093:9092"
     environment:
@@ -25,3 +27,28 @@ services:
       KAFKA_ADVERTISED_PORT: 9093
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'false'
+  mongo:
+    image: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: producer
+      MONGO_INITDB_ROOT_PASSWORD: 1234
+      MONGO_INITDB_DATABASE: producer-db
+    ports:
+      - 27017:27017
+    volumes: 
+      - ./mongo-script.js:/docker-entrypoint-initdb.d/mongo-script.js
+  mongo-express:
+    image: mongo-express
+    restart: always
+    ports:
+      - 8081:8081
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: producer
+      ME_CONFIG_MONGODB_ADMINPASSWORD: 1234
+  producer:
+    image: jonasgama/example-producer:0.1.0
+    restart: always
+    ports:
+      - 9090:8080
+      

@@ -44,7 +44,7 @@ public class KafkaApplicationMockTests {
 		ResultActions resultActions = mockMvc.perform(post("/v1/book")
 				.content(mapper.writeValueAsString(book))
 				.contentType(MediaType.APPLICATION_JSON))
-				.andExpect(status().isCreated());
+				.andExpect(status().isAccepted());
 
 	}
 

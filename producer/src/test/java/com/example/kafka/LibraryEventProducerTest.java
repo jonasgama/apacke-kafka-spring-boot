@@ -21,19 +21,19 @@ import org.springframework.util.concurrent.SettableListenableFuture;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.isA;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class LibraryEventProducerTest {
 
     @Mock
-    KafkaTemplate<Integer, String> kafkaTemplate;
+    private KafkaTemplate<Integer, String> kafkaTemplate;
 
     @Spy
-    ObjectMapper objMapper;
+    private ObjectMapper objMapper;
 
     @InjectMocks
-    LibraryEventProducer producer;
+    private LibraryEventProducer producer;
 
     @Test
     public void onFailure() throws JsonProcessingException {
@@ -80,6 +80,8 @@ public class LibraryEventProducerTest {
         when(kafkaTemplate.send(isA(ProducerRecord.class))).thenReturn(future);
 
         producer.sendLibraryEvent(senhorDosAneis);
+
+        verify(kafkaTemplate, times(1)).send(any(ProducerRecord.class));
 
 
     }
