@@ -4,20 +4,28 @@ spring:
 ---
 spring:
   profiles: local
+  data:
+    mongodb:
+        uri: mongodb://producer:1234@mongo:27017/producer-db
   kafka:
     template:
       default-topic: library-events
     producer:
-      bootstrap-servers: localhost:9092,localhost:9093
+      bootstrap-servers: kafka:9094,kafka1:9095
       key-serializer: org.apache.kafka.common.serialization.IntegerSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
-    properties:
-      retries: 10
-      retry.backoff.ms: 1000
-      transaction.timeout.ms: 10000
-      acks: all
-    admin:
+      ssl:
+        trust-store-location: file:/certs/client.truststore.jks
+        trust-store-password: 123456789
+        key-store-location: file:/certs/server.keystore.jks
+        key-store-password: 123456789
       properties:
-        bootstrap.servers: localhost:9092,localhost:9093
+        retries: 10
+        retry.backoff.ms: 1000
+        transaction.timeout.ms: 10000
+        acks: all
+        security:
+          protocol: SSL
+        ssl.endpoint.identification.algorithm:
 
 ---
