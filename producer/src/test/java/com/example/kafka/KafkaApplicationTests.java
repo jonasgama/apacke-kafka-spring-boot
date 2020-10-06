@@ -20,10 +20,13 @@ import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.test.EmbeddedKafkaBroker;
 import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.kafka.test.utils.KafkaTestUtils;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -31,6 +34,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @EmbeddedKafka(topics = {"library-events"}, partitions = 4)
 @TestPropertySource(properties = {"spring.kafka.producer.bootstrap-servers=${spring.embedded.kafka.brokers}",
 		"spring.kafka.admin.properties.bootstrap.servers=${spring.embedded.kafka.brokers}"})
+@ActiveProfiles("test")
 public class KafkaApplicationTests {
 
 	@Autowired
@@ -56,7 +60,9 @@ public class KafkaApplicationTests {
 	}
 
 	@Test
-	public void postLibraryEvent() {
+	public void postLibraryEvent() throws InterruptedException {
+		new CountDownLatch(1).await(3, TimeUnit.SECONDS);
+
 		//given
 		Book book = Book.builder().id(1).name("meu-livro").build();
 

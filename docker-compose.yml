@@ -4,6 +4,8 @@ services:
     image: wurstmeister/zookeeper:latest
     ports:
       - "2181:2181"
+    networks:
+      - net-backend
   kafka:
     image: wurstmeister/kafka
     restart: always
@@ -15,14 +17,14 @@ services:
       KAFKA_ADVERTISED_HOST_NAME: ${MY_HOST}
       KAFKA_ADVERTISED_PORT: 9092
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
       #nome:partition:replica
       KAFKA_CREATE_TOPICS: "library-events:4:2"
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'false'
       #SSL SETUP
       KAFKA_LISTENERS: PLAINTEXT://:9092,SSL://:9094
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,SSL://kafka:9094
       KAFKA_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: ''
-      KAFKA_SSL_CLIENT_AUTH: 'required'
+      KAFKA_SSL_CLIENT_AUTH: 'none'
       KAFKA_SECURITY_INTER_BROKER_PROTOCOL: 'SSL'
       KAFKA_SSL_KEYSTORE_LOCATION: '/etc/ca-certificates/server.keystore.jks'
       KAFKA_SSL_KEYSTORE_PASSWORD: '123456789'
@@ -32,6 +34,8 @@ services:
     volumes: 
       - ./certs/:/etc/ca-certificates/
       - ./client-ssl.properties:/opt/kafka/bin/client-ssl.properties
+    networks:
+      - net-backend
   kafka1:
     image: wurstmeister/kafka
     restart: always
@@ -48,7 +52,7 @@ services:
       KAFKA_LISTENERS: PLAINTEXT://:9093,SSL://:9095
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka1:9093,SSL://kafka1:9095
       KAFKA_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: ''
-      KAFKA_SSL_CLIENT_AUTH: 'required'
+      KAFKA_SSL_CLIENT_AUTH: 'none'
       KAFKA_SECURITY_INTER_BROKER_PROTOCOL: 'SSL'
       KAFKA_SSL_KEYSTORE_LOCATION: '/etc/ca-certificates/server.keystore.jks'
       KAFKA_SSL_KEYSTORE_PASSWORD: '123456789'
@@ -58,6 +62,8 @@ services:
     volumes: 
       - ./certs/:/etc/ca-certificates/
       - ./client-ssl.properties:/opt/kafka/bin/client-ssl.properties
+    networks:
+      - net-backend
     depends_on: 
       - kafka
   mongo:
@@ -85,7 +91,7 @@ services:
       ME_CONFIG_MONGODB_ADMINUSERNAME: producer
       ME_CONFIG_MONGODB_ADMINPASSWORD: 1234
   producer:
-    image: jonasgama/example-producer:latest
+    image: jonasgama/example-producer:0.1.2
     networks:
       - net-backend
     restart: always
@@ -93,6 +99,10 @@ services:
       - 9000:8080
     volumes: 
       - ./certs/:/certs/
+    environment: 
+      trust_store_password: ${trust_store_password}
+      key_store_password: ${key_store_password}
+      bootstrap_servers: ${bootstrap_servers}
     depends_on:
       - mongo
     links:
