@@ -1,10 +1,10 @@
 # apacke-kafka-spring-boot
-Producer, consumer concepts using: 
+Producer, consumer concepts using SSL kafka security: 
 spring-boot 2.2.6.RELEASE 
 wurstmeister/zookeeper and kafka image
 Mongo and Mongo-Express
 
-To accelerate my productivity development, i chose gradle as my automation build tool.
+To accelerate my productivity development, i have chosen gradle as my automation build tool.
 I have chosen SpringBoot because it is much easier to configure using Java 8.
 There is a DockeCompose file whose has two brokers and are exposed using specific port and manually advertise a host name and configure each broker-id
 
@@ -24,8 +24,8 @@ It could lead you to a PoisonPill process, even knowing this i wont cover dead-l
 My retry policy tries 3 times in case of a IllegalArgumentException throws, the purpose of this aproach intented to see the mechanic working
 
 
-valid json to insert
-{"libraryEventId":null,"type":"NEW","book":{"id":null,"name":"uncle bob"}}
+valid curl to insert
+curl -X POST -H 'Content-type: application/json' -d '{"id":null,"name":"uncle bob"}' http://localhost:9000/v1/book
 
 
 #SSL
